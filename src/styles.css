@@ -1,0 +1,151 @@
+:root {
+  --forest: #426b53;
+  --sage: #a8b99a;
+  --cream: #f6f0de;
+  --orange: #dda36c;
+  --brown: #80634c;
+  --white: #fffdf5;
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; background: var(--sage); }
+
+body {
+  font-family: 'Noto Sans TC', system-ui, sans-serif;
+  color: var(--brown);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.app {
+  max-width: 480px;
+  min-height: 100dvh;
+  margin: 0 auto;
+  background: var(--cream);
+  border-left: 4px solid var(--brown);
+  border-right: 4px solid var(--brown);
+}
+
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px 18px 28px;
+  min-height: 100dvh;
+}
+.screen.center { align-items: stretch; text-align: center; justify-content: center; }
+
+.pixel-font { font-family: 'Press Start 2P', monospace; font-size: 12px; }
+.eyebrow { margin: 0; font-size: 14px; }
+.title {
+  margin: 0;
+  font-size: 44px;
+  line-height: 1.2;
+  color: var(--forest);
+  text-shadow: 3px 3px 0 var(--orange);
+  letter-spacing: 4px;
+}
+.h2 { margin: 0; color: var(--forest); font-size: 22px; }
+.lead { margin: 4px 0; font-size: 18px; font-weight: 700; color: var(--forest); }
+.note { margin: 0; font-size: 13px; line-height: 1.6; opacity: 0.85; }
+
+.topbar { display: flex; justify-content: space-between; align-items: center; color: var(--forest); font-weight: 700; }
+
+/* 像素風卡片與按鈕 */
+.panel {
+  background: var(--white);
+  border: 4px solid var(--brown);
+  box-shadow: 4px 4px 0 var(--brown);
+  padding: 12px 14px;
+  color: var(--brown);
+}
+
+.btn {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 52px;
+  padding: 10px 16px;
+  font: inherit; font-size: 17px; font-weight: 700;
+  border: 4px solid var(--brown);
+  box-shadow: 4px 4px 0 var(--brown);
+  cursor: pointer;
+  text-decoration: none;
+}
+.btn:active:not(:disabled) { transform: translate(3px, 3px); box-shadow: 1px 1px 0 var(--brown); }
+.btn:disabled { opacity: 0.6; cursor: default; }
+.btn-primary { background: var(--forest); color: var(--cream); }
+.btn-secondary { background: var(--white); color: var(--forest); }
+
+/* 場景 */
+.scene {
+  position: relative; overflow: hidden;
+  height: 150px;
+  border: 4px solid var(--brown);
+  background: #d9e8dc;
+}
+.scene-tall { height: 230px; }
+.scene-sun { position: absolute; top: 14px; right: 22px; width: 28px; height: 28px; background: var(--orange); box-shadow: 0 0 0 4px #efc99f; }
+.scene-cloud { position: absolute; height: 10px; background: var(--white); box-shadow: 8px -8px 0 var(--white), 24px 0 0 var(--white); }
+.scene-cloud.c1 { top: 24px; left: 24px; width: 34px; }
+.scene-cloud.c2 { top: 50px; left: 140px; width: 28px; }
+.scene-hills { position: absolute; left: 0; right: 0; bottom: 38%; height: 28%; background: var(--sage);
+  clip-path: polygon(0 100%, 0 40%, 12% 40%, 12% 20%, 30% 20%, 30% 45%, 52% 45%, 52% 10%, 74% 10%, 74% 40%, 100% 40%, 100% 100%); }
+.scene-field { position: absolute; left: 0; right: 0; bottom: 0; height: 40%; background: #8fa37f; display: flex; align-items: flex-start; justify-content: space-around; padding-top: 8px; }
+.scene-field i { width: 10px; height: 14px; background: var(--forest); }
+.scene-actor { position: absolute; left: 50%; bottom: 6px; transform: translateX(-50%); line-height: 0; }
+
+/* 數值條 */
+.meters { display: flex; flex-direction: column; gap: 8px; }
+.meter-row { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+.meter-label { width: 70px; font-weight: 700; }
+.meter-bar { flex: 1; height: 14px; border: 3px solid var(--brown); background: #e8dfc0; }
+.meter-fill { height: 100%; transition: width 0.4s steps(10); }
+.meter-delta { width: 62px; text-align: right; font-size: 13px; }
+
+/* 對話框 */
+.dialog {
+  display: block; width: 100%; min-height: 110px; text-align: left; cursor: pointer; font: inherit;
+  position: relative; font-size: 17px; line-height: 1.7;
+}
+.dialog-speaker { display: block; font-weight: 700; color: var(--forest); margin-bottom: 4px; }
+.dialog-caret { position: absolute; right: 10px; bottom: 6px; color: var(--orange); animation: blink 1s steps(2) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+/* 選項 */
+.options { display: flex; flex-direction: column; gap: 10px; }
+.option {
+  display: flex; align-items: stretch; min-height: 58px; padding: 0; text-align: left; font: inherit;
+  background: var(--white); color: var(--brown);
+  border: 4px solid var(--brown); box-shadow: 4px 4px 0 var(--brown); cursor: pointer;
+}
+.option:disabled { opacity: 0.55; cursor: default; }
+.option:active:not(:disabled) { transform: translate(3px, 3px); box-shadow: 1px 1px 0 var(--brown); }
+.option.chosen { cursor: default; background: #e5eadb; }
+.option-id { width: 44px; display: flex; align-items: center; justify-content: center; background: var(--brown); color: var(--cream); font-family: 'Press Start 2P', monospace; font-size: 14px; }
+.option-text { flex: 1; padding: 8px 12px; font-size: 16px; line-height: 1.5; display: flex; align-items: center; }
+
+.result-title { font-weight: 700; color: var(--forest); margin-bottom: 4px; }
+.result p { margin: 0 0 6px; line-height: 1.7; font-size: 16px; }
+
+/* 角色抽取 */
+.role-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.role-chip { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 2px; font-size: 12px; background: var(--white); border: 3px solid var(--sage); line-height: 1.3; text-align: center; }
+.role-chip.active { border-color: var(--orange); background: #fbe9d2; transform: translateY(-2px); }
+.role-card { display: flex; gap: 12px; align-items: center; }
+.role-name { font-size: 20px; font-weight: 700; color: var(--forest); }
+.role-tagline { font-size: 14px; color: var(--orange); font-weight: 700; margin: 2px 0 6px; }
+.role-bg { margin: 0; font-size: 14px; line-height: 1.6; }
+
+/* 結局 */
+.ending-card { display: flex; flex-direction: column; gap: 8px; }
+.ending-title { font-size: 26px; font-weight: 700; color: var(--forest); }
+.ending-story { margin: 0; line-height: 1.8; font-size: 16px; }
+.share-slot { border: 3px dashed var(--brown); padding: 14px; text-align: center; font-size: 13px; opacity: 0.8; }
+
+@media (min-width: 520px) {
+  .app { margin-top: 12px; margin-bottom: 12px; min-height: calc(100dvh - 24px); border: 4px solid var(--brown); }
+  .screen { min-height: calc(100dvh - 24px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dialog-caret { animation: none; }
+  .meter-fill { transition: none; }
+}
