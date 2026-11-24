@@ -38,6 +38,13 @@ for (const role of roles.filter((r) => r.playable)) {
     continue
   }
   const days = script.days
+  for (const d of days)
+    for (const ev of d.events) {
+      const dlg = dialogues[ev.id]
+      if (!dlg) fail(`${role.name} 事件 ${ev.id} 沒有對話（每個事件都要有其他角色互動）`)
+      else if (dlg.npcRoleId === role.id) fail(`${role.name} 事件 ${ev.id} 的對話對象是自己`)
+      else if (!roles.some((r) => r.id === dlg.npcRoleId)) fail(`事件 ${ev.id} 的對話角色 ${dlg.npcRoleId} 不存在`)
+    }
   if (days.length !== 5) fail(`${role.name} 不是 5 天`)
   for (const d of days) {
     for (const ev of d.events) {

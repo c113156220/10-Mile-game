@@ -1,4 +1,5 @@
 import type { Dialogue } from '../types'
+import { moreDialogues } from './dialoguesMore'
 
 /**
  * 角色對話（試點）：玩家選完事件後，與其他角色最多 3 輪對話。
@@ -8,7 +9,7 @@ import type { Dialogue } from '../types'
  */
 const e = (balance: number, community: number, efficiency: number) => ({ balance, community, efficiency })
 
-export const dialogues: Record<string, Dialogue> = {
+const longDialogues: Record<string, Dialogue> = {
   "D1c": {
     npcRoleId: "consumer",
     rounds: [
@@ -97,3 +98,6 @@ export const dialogues: Record<string, Dialogue> = {
     ],
   },
 }
+
+/** 所有事件的對話：每個事件都會遇到另一個角色。 */
+export const dialogues: Record<string, Dialogue> = { ...longDialogues, ...moreDialogues }
