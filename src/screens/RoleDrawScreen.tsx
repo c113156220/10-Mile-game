@@ -4,18 +4,21 @@ import { roles } from '../data/roles'
 
 type Phase = 'idle' | 'drawing' | 'done'
 
-/** 角色抽取頁：有抽籤動畫。目前只有「在地小農」可玩，所以抽籤結果固定落在小農。 */
+/** 角色抽取頁：有抽籤動畫。從所有可玩角色中隨機抽一個。 */
 export default function RoleDrawScreen({ onStart }: { onStart: (roleId: string) => void }) {
   const [phase, setPhase] = useState<Phase>('idle')
   const [active, setActive] = useState(0)
   const timer = useRef<number | undefined>(undefined)
 
   const playable = roles.filter((r) => r.playable)
-  const picked = playable[Math.floor(Math.random() * playable.length)]
+  // 抽中的角色在按下按鈕時才決定，之後保持不變
+  const [picked, setPicked] = useState(playable[0])
 
   useEffect(() => () => window.clearInterval(timer.current), [])
 
   const draw = () => {
+    const result = playable[Math.floor(Math.random() * playable.length)]
+    setPicked(result)
     setPhase('drawing')
     let ticks = 0
     timer.current = window.setInterval(() => {
@@ -23,7 +26,7 @@ export default function RoleDrawScreen({ onStart }: { onStart: (roleId: string) 
       setActive((a) => (a + 1) % roles.length)
       if (ticks >= 16) {
         window.clearInterval(timer.current)
-        setActive(roles.findIndex((r) => r.id === picked.id))
+        setActive(roles.findIndex((r) => r.id === result.id))
         setPhase('done')
       }
     }, 110)
@@ -52,7 +55,7 @@ export default function RoleDrawScreen({ onStart }: { onStart: (roleId: string) 
         </div>
       ) : (
         <p className="note">
-          {phase === 'drawing' ? '抽取中…' : '按下按鈕，隨機抽一個身分。其他角色即將開放。'}
+          {phase === 'drawing' ? '抽取中…' : '按下按鈕，從小農、合作社社員、消費者中隨機抽一個身分。'}
         </p>
       )}
 

@@ -19,7 +19,7 @@ export const roles: Role[] = [
     name: '消費者',
     tagline: '價格與支持在地，怎麼選？',
     background: '每天都在買菜、買日用品，想支持在地，也要顧荷包。',
-    playable: false,
+    playable: true,
     look: { shirt: '#DDA36C', pants: '#3E2D28', accessory: 'phone' },
   },
   {
@@ -27,7 +27,7 @@ export const roles: Role[] = [
     name: '合作社社員',
     tagline: '有限時間，要如何參與？',
     background: '加入了合作社，想參與，但工作與生活的時間都很有限。',
-    playable: false,
+    playable: true,
     look: { shirt: '#A8B99A', pants: '#426B53', accessory: 'tie' },
   },
   {

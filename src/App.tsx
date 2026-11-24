@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { farmerDays, farmerIntro } from './data/farmer'
+import { scripts } from './data/scripts'
 import { roles } from './data/roles'
 import { dialogues } from './data/dialogues'
+import { endingFor } from './data/roleTexts'
 import { applyEffect, applyOption, currentEvent, decideEnding, isLastDay, newGame, nextDay } from './engine/game'
 import type { GameState } from './engine/game'
 import ChoiceScreen from './screens/ChoiceScreen'
@@ -13,11 +14,6 @@ import StoryScreen from './screens/StoryScreen'
 import type { Option } from './types'
 
 type Screen = 'start' | 'draw' | 'story' | 'play' | 'dialogue' | 'ending'
-
-/** 目前只有小農有劇情資料。新增角色時，在這裡依 roleId 對應該角色的資料。 */
-const scripts: Record<string, { days: typeof farmerDays; intro: string }> = {
-  farmer: { days: farmerDays, intro: farmerIntro },
-}
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>('start')
@@ -97,7 +93,7 @@ export default function App() {
         />
       )}
       {screen === 'ending' && state && (
-        <EndingScreen role={role} ending={decideEnding(state.stats)} stats={state.stats} onRestart={restart} />
+        <EndingScreen role={role} ending={endingFor(role.id, decideEnding(state.stats))} stats={state.stats} onRestart={restart} />
       )}
     </main>
   )
