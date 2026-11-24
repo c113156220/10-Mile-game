@@ -110,3 +110,38 @@ export interface TextResponse {
 export interface TextProvider {
   getEventText(req: TextRequest): Promise<TextResponse>
 }
+
+/** 共同故事：每天一件全員都會遇到的事 */
+export interface DayStory {
+  day: number
+  title: string
+  /** 共同事件的敘述（固定版） */
+  narration: string
+}
+
+export interface PairReply {
+  id: 'A' | 'B' | 'C'
+  /** 回覆者說的話 */
+  text: string
+  /** 這個結果對提問者的數值變化，總和為 0 */
+  askerEffect: Effect
+  /** 這個結果對回覆者的數值變化，總和為 0 */
+  replierEffect: Effect
+}
+
+export interface PairQuestion {
+  text: string
+  replies: [PairReply, PairReply, PairReply]
+}
+
+/**
+ * 兩個角色的一次對話：提問者有 3 個問題，每個問題底下回覆者有 3 種回覆。
+ * 玩家是提問者：自己選問題，回覆隨機抽一個；玩家是回覆者：問題隨機抽一個，自己選回覆。
+ */
+export interface PairDialogue {
+  id: string
+  day: number
+  asker: string
+  replier: string
+  questions: [PairQuestion, PairQuestion, PairQuestion]
+}

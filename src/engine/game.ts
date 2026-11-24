@@ -4,6 +4,7 @@ import type {
   Ending,
   GameEvent,
   Option,
+  PairDialogue,
   StatBand,
   StatKey,
   Stats,
@@ -107,4 +108,39 @@ export function deltaWord(delta: number): string {
   if (delta > 0) return '▲ 增加'
   if (delta < 0) return '▼ 略減'
   return '－ 不變'
+}
+
+// ───────── 共同故事模式：每天一件共同事件 + 一組兩兩對話 ─────────
+
+export interface StoryState {
+  roleId: string
+  /** 每天抽到的對話（開局決定，只會抽到跟玩家角色有關的） */
+  pairs: PairDialogue[]
+  dayIndex: number
+  stats: Stats
+}
+
+/** 開局：每天從「玩家角色參與的對話」中隨機抽一組。rand 可注入，方便測試。 */
+export function newStoryGame(
+  roleId: string,
+  all: PairDialogue[],
+  days: number,
+  rand: () => number = Math.random,
+): StoryState {
+  const pairs: PairDialogue[] = []
+  for (let d = 1; d <= days; d++) {
+    const pool = all.filter((p) => p.day === d && (p.asker === roleId || p.replier === roleId))
+    pairs.push(pool[Math.floor(rand() * pool.length)])
+  }
+  return { roleId, pairs, dayIndex: 0, stats: { ...START_STATS } }
+}
+
+export function applyStoryEffect(state: StoryState, effect: Stats): StoryState {
+  const stats = { ...state.stats }
+  for (const k of STAT_KEYS) stats[k] = clamp(stats[k] + effect[k])
+  return { ...state, stats }
+}
+
+export function nextStoryDay(state: StoryState): StoryState {
+  return { ...state, dayIndex: state.dayIndex + 1 }
 }

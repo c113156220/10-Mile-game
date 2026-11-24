@@ -1,60 +1,51 @@
 import { useState } from 'react'
-import { scripts } from './data/scripts'
+import { dayStories, pairDialogues } from './data/pairs'
 import { roles } from './data/roles'
-import { dialogues } from './data/dialogues'
 import { endingFor } from './data/roleTexts'
-import { applyEffect, applyOption, currentEvent, decideEnding, isLastDay, newGame, nextDay } from './engine/game'
-import type { GameState } from './engine/game'
-import ChoiceScreen from './screens/ChoiceScreen'
-import DialogueScreen from './screens/DialogueScreen'
+import { scripts } from './data/scripts'
+import { applyStoryEffect, decideEnding, newStoryGame, nextStoryDay } from './engine/game'
+import type { StoryState } from './engine/game'
 import EndingScreen from './screens/EndingScreen'
+import EventScreen from './screens/EventScreen'
+import PairTalkScreen from './screens/PairTalkScreen'
 import RoleDrawScreen from './screens/RoleDrawScreen'
 import StartScreen from './screens/StartScreen'
 import StoryScreen from './screens/StoryScreen'
-import type { Option } from './types'
 
-type Screen = 'start' | 'draw' | 'story' | 'play' | 'dialogue' | 'ending'
+type Screen = 'start' | 'draw' | 'story' | 'event' | 'talk' | 'ending'
 
+/**
+ * 共同故事模式：每天一件全員都會遇到的事 + 與另一個角色的對話。
+ * 原本的單人事件資料（data/farmer.ts、member.ts、consumer.ts、dialogues.ts）保留在專案中，目前不使用。
+ */
 export default function App() {
   const [screen, setScreen] = useState<Screen>('start')
-  const [state, setState] = useState<GameState | null>(null)
-  const [chosen, setChosen] = useState<Option | null>(null)
+  const [state, setState] = useState<StoryState | null>(null)
 
   const role = roles.find((r) => r.id === state?.roleId) ?? roles[0]
-  const script = scripts[role.id]
+  const pair = state ? state.pairs[state.dayIndex] : null
+  const playerIsAsker = !!pair && pair.asker === role.id
+  const npc = pair ? (roles.find((r) => r.id === (playerIsAsker ? pair.replier : pair.asker)) ?? roles[1]) : roles[1]
+  const story = state ? dayStories[state.dayIndex] : dayStories[0]
+  const total = dayStories.length
+  const isLast = !!state && state.dayIndex >= total - 1
 
   const begin = (roleId: string) => {
-    setState(newGame(roleId, scripts[roleId].days))
-    setChosen(null)
+    setState(newStoryGame(roleId, pairDialogues, total))
     setScreen('story')
   }
 
-  const pick = (o: Option) => {
+  const finishDay = () => {
     if (!state) return
-    setState(applyOption(state, o))
-    setChosen(o)
-  }
-
-  const advance = () => {
-    if (!state) return
-    setChosen(null)
-    if (isLastDay(state)) setScreen('ending')
+    if (isLast) setScreen('ending')
     else {
-      setState(nextDay(state))
-      setScreen('play')
+      setState(nextStoryDay(state))
+      setScreen('event')
     }
-  }
-
-  // 選完事件後，如果這個事件有對話，先進入對話頁，再前進到下一天
-  const next = () => {
-    if (!state) return
-    if (dialogues[currentEvent(state).id]) setScreen('dialogue')
-    else advance()
   }
 
   const restart = () => {
     setState(null)
-    setChosen(null)
     setScreen('draw')
   }
 
@@ -63,33 +54,23 @@ export default function App() {
       {screen === 'start' && <StartScreen onStart={() => setScreen('draw')} />}
       {screen === 'draw' && <RoleDrawScreen onStart={begin} />}
       {screen === 'story' && state && (
-        <StoryScreen role={role} intro={script.intro} onContinue={() => setScreen('play')} />
+        <StoryScreen role={role} intro={scripts[role.id].intro} onContinue={() => setScreen('event')} />
       )}
-      {screen === 'play' && state && currentEvent(state) && (
-        <ChoiceScreen
-          role={role}
-          state={state}
-          total={state.events.length}
-          chosen={chosen}
-          isLast={isLastDay(state)}
-          talkTo={
-            dialogues[currentEvent(state).id]
-              ? (roles.find((r) => r.id === dialogues[currentEvent(state).id].npcRoleId)?.name ?? null)
-              : null
-          }
-          onPick={pick}
-          onNext={next}
-        />
+      {screen === 'event' && state && pair && (
+        <EventScreen player={role} npc={npc} story={story} total={total} stats={state.stats} onContinue={() => setScreen('talk')} />
       )}
-      {screen === 'dialogue' && state && dialogues[currentEvent(state).id] && (
-        <DialogueScreen
+      {screen === 'talk' && state && pair && (
+        <PairTalkScreen
+          key={`${state.dayIndex}`}
           player={role}
-          npc={roles.find((r) => r.id === dialogues[currentEvent(state).id].npcRoleId) ?? roles[1]}
-          dialogue={dialogues[currentEvent(state).id]}
+          npc={npc}
+          pair={pair}
+          playerIsAsker={playerIsAsker}
+          story={story}
           stats={state.stats}
-          eventTitle={currentEvent(state).title}
-          onEffect={(eff) => setState((s) => (s ? applyEffect(s, eff) : s))}
-          onFinish={advance}
+          isLast={isLast}
+          onEffect={(eff) => setState((s) => (s ? applyStoryEffect(s, eff) : s))}
+          onFinish={finishDay}
         />
       )}
       {screen === 'ending' && state && (
