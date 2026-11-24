@@ -62,6 +62,13 @@ export function applyOption(state: GameState, option: Option): GameState {
   }
 }
 
+/** 套用一個數值變化（例如對話的回應），一樣限制在 0–10。 */
+export function applyEffect(state: GameState, effect: Stats): GameState {
+  const stats = { ...state.stats }
+  for (const k of STAT_KEYS) stats[k] = clamp(stats[k] + effect[k])
+  return { ...state, stats }
+}
+
 export function nextDay(state: GameState): GameState {
   return { ...state, dayIndex: state.dayIndex + 1 }
 }

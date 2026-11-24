@@ -149,3 +149,5 @@ body {
   .dialog-caret { animation: none; }
   .meter-fill { transition: none; }
 }
+
+.duo { display: flex; align-items: flex-end; gap: 56px; }

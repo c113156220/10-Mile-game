@@ -3,6 +3,7 @@
  * 1. 每個選項三項變化總和 = 0，且每個事件恰好 A/B/C 三個選項
  * 2. 窮舉第 3 天 3 種事件 × 每天選項組合（729 條路徑），確認 7 種結局都能到達
  */
+import { dialogues } from '../src/data/dialogues'
 import { farmerDays } from '../src/data/farmer'
 import { applyOption, currentEvent, decideEnding, isLastDay, nextDay } from '../src/engine/game'
 import type { GameState } from '../src/engine/game'
@@ -10,6 +11,27 @@ import { START_STATS } from '../src/engine/game'
 import { STAT_KEYS } from '../src/types'
 
 let errors = 0
+
+// 對話：每個回覆數值總和為 0，且最多 3 輪、每輪 3 個回覆
+for (const [id, dlg] of Object.entries(dialogues)) {
+  if (!farmerDays.some((d) => d.events.some((e) => e.id === id))) {
+    console.error(`對話 ${id} 找不到對應事件`)
+    errors++
+  }
+  if (dlg.rounds.length > 3) {
+    console.error(`對話 ${id} 超過 3 輪`)
+    errors++
+  }
+  dlg.rounds.forEach((r, ri) =>
+    r.replies.forEach((rep) => {
+      const sum = STAT_KEYS.reduce((s, k) => s + rep.effect[k], 0)
+      if (sum !== 0) {
+        console.error(`對話 ${id} 第 ${ri + 1} 輪 ${rep.id} 數值總和 = ${sum}，應為 0`)
+        errors++
+      }
+    }),
+  )
+}
 for (const d of farmerDays) {
   for (const ev of d.events) {
     const ids = ev.options.map((o) => o.id).join('')
@@ -33,10 +55,12 @@ for (const d of farmerDays) {
 
 const counts: Record<string, number> = {}
 let total = 0
-for (const d3 of farmerDays[2].events) {
-  const events = farmerDays.map((d, i) => (i === 2 ? d3 : d.events[0]))
+const choose = (i: number): typeof farmerDays[number]['events'][number][][] =>
+  i >= farmerDays.length
+    ? [[]]
+    : farmerDays[i].events.flatMap((ev) => choose(i + 1).map((rest) => [ev, ...rest]))
+for (const events of choose(0)) {
   const walk = (state: GameState) => {
-    if (state.dayIndex >= events.length) return
     for (const o of currentEvent(state).options) {
       const after = applyOption(state, o)
       if (isLastDay(state)) {
@@ -51,7 +75,7 @@ for (const d3 of farmerDays[2].events) {
   walk({ roleId: 'farmer', events, dayIndex: 0, stats: { ...START_STATS }, history: [] })
 }
 
-console.log(`共 ${total} 條路徑`)
+console.log(`共 ${total} 條路徑（事件組合 × 選項，未含對話）`)
 for (const [k, v] of Object.entries(counts).sort((a, b) => b[1] - a[1])) {
   console.log(`${k}: ${v} (${((v / total) * 100).toFixed(1)}%)`)
 }

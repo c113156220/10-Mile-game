@@ -1,16 +1,18 @@
 import { useState } from 'react'
 import { farmerDays, farmerIntro } from './data/farmer'
 import { roles } from './data/roles'
-import { applyOption, currentEvent, decideEnding, isLastDay, newGame, nextDay } from './engine/game'
+import { dialogues } from './data/dialogues'
+import { applyEffect, applyOption, currentEvent, decideEnding, isLastDay, newGame, nextDay } from './engine/game'
 import type { GameState } from './engine/game'
 import ChoiceScreen from './screens/ChoiceScreen'
+import DialogueScreen from './screens/DialogueScreen'
 import EndingScreen from './screens/EndingScreen'
 import RoleDrawScreen from './screens/RoleDrawScreen'
 import StartScreen from './screens/StartScreen'
 import StoryScreen from './screens/StoryScreen'
 import type { Option } from './types'
 
-type Screen = 'start' | 'draw' | 'story' | 'play' | 'ending'
+type Screen = 'start' | 'draw' | 'story' | 'play' | 'dialogue' | 'ending'
 
 /** 目前只有小農有劇情資料。新增角色時，在這裡依 roleId 對應該角色的資料。 */
 const scripts: Record<string, { days: typeof farmerDays; intro: string }> = {
@@ -37,11 +39,21 @@ export default function App() {
     setChosen(o)
   }
 
-  const next = () => {
+  const advance = () => {
     if (!state) return
     setChosen(null)
     if (isLastDay(state)) setScreen('ending')
-    else setState(nextDay(state))
+    else {
+      setState(nextDay(state))
+      setScreen('play')
+    }
+  }
+
+  // 選完事件後，如果這個事件有對話，先進入對話頁，再前進到下一天
+  const next = () => {
+    if (!state) return
+    if (dialogues[currentEvent(state).id]) setScreen('dialogue')
+    else advance()
   }
 
   const restart = () => {
@@ -64,8 +76,24 @@ export default function App() {
           total={state.events.length}
           chosen={chosen}
           isLast={isLastDay(state)}
+          talkTo={
+            dialogues[currentEvent(state).id]
+              ? (roles.find((r) => r.id === dialogues[currentEvent(state).id].npcRoleId)?.name ?? null)
+              : null
+          }
           onPick={pick}
           onNext={next}
+        />
+      )}
+      {screen === 'dialogue' && state && dialogues[currentEvent(state).id] && (
+        <DialogueScreen
+          player={role}
+          npc={roles.find((r) => r.id === dialogues[currentEvent(state).id].npcRoleId) ?? roles[1]}
+          dialogue={dialogues[currentEvent(state).id]}
+          stats={state.stats}
+          eventTitle={currentEvent(state).title}
+          onEffect={(eff) => setState((s) => (s ? applyEffect(s, eff) : s))}
+          onFinish={advance}
         />
       )}
       {screen === 'ending' && state && (

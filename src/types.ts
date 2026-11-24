@@ -34,6 +34,28 @@ export interface GameEvent {
   options: [Option, Option, Option]
 }
 
+export interface DialogueReply {
+  id: 'A' | 'B' | 'C'
+  /** 玩家說的話 */
+  text: string
+  /** 角色的回應 */
+  reply: string
+  /** 數值變化，總和必須為 0，疊加在事件選項之上 */
+  effect: Effect
+}
+
+export interface DialogueRound {
+  /** 角色先說的話 */
+  line: string
+  replies: [DialogueReply, DialogueReply, DialogueReply]
+}
+
+/** 玩家選完事件後，與另一個角色的對話（最多 3 輪，第一版為預設內容，不需後端） */
+export interface Dialogue {
+  npcRoleId: string
+  rounds: DialogueRound[]
+}
+
 export interface DayPlan {
   day: number
   /** 一般日只有一個事件；有多個代表從事件池隨機抽一個 */

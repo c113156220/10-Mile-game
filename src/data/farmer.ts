@@ -1,4 +1,5 @@
 import type { DayPlan } from '../types'
+import { extraEvents } from './farmerExtra'
 
 /**
  * 小農 5 天劇情（固定版）。
@@ -15,7 +16,7 @@ const e = (balance: number, community: number, efficiency: number) => ({
 export const farmerIntro =
   '你是新竹郊區的一位小農。這一週，田裡的事、市場的事、鄰里的事，都要你一件一件做決定。沒有哪個選擇是標準答案，每個選擇都有得有失。'
 
-export const farmerDays: DayPlan[] = [
+const baseDays: DayPlan[] = [
   {
     day: 1,
     events: [
@@ -239,3 +240,9 @@ export const farmerDays: DayPlan[] = [
     ],
   },
 ]
+
+/** 每天的事件池：原本的事件在前，新增事件在後（與 Excel 場景表順序一致）。開局時每天抽 1 個。 */
+export const farmerDays: DayPlan[] = baseDays.map((d) => ({
+  ...d,
+  events: [...d.events, ...(extraEvents[d.day] ?? [])],
+}))

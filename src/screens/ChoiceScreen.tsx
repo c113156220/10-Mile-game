@@ -17,12 +17,14 @@ interface Props {
   /** 選完、看完影響後按「繼續」 */
   onNext: () => void
   isLast: boolean
+  /** 這個事件有對話時，顯示對話角色的名字；沒有則為 null */
+  talkTo: string | null
   /** 目前已選的選項（選完後顯示影響） */
   chosen: Option | null
 }
 
 /** 情境選擇頁：顯示當天事件與三個選項，選完後顯示這個選擇的影響。 */
-export default function ChoiceScreen({ role, state, total, onPick, onNext, isLast, chosen }: Props) {
+export default function ChoiceScreen({ role, state, total, onPick, onNext, isLast, chosen, talkTo }: Props) {
   const ev = state.events[state.dayIndex]
   const [text, setText] = useState<TextResponse | null>(null)
   const [ready, setReady] = useState(false)
@@ -84,7 +86,7 @@ export default function ChoiceScreen({ role, state, total, onPick, onNext, isLas
             </p>
           </div>
           <button type="button" className="btn btn-primary" onClick={onNext}>
-            {isLast ? '看我的結局' : '繼續下一天'}
+            {talkTo ? `和${talkTo}聊聊` : isLast ? '看我的結局' : '繼續下一天'}
           </button>
         </>
       ) : (
