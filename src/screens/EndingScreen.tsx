@@ -50,13 +50,15 @@ export default function EndingScreen({
         <p className="ending-story">{ending.story}</p>
         <p className="note">每個選擇都有得有失，沒有標準答案。</p>
       </div>
-      <Meters stats={stats} />
       <div className="panel ending-card">
         <div className="ending-title">這一週，大家過得怎麼樣</div>
         {people.map((p) => (
-          <p key={p.role.id} className="ending-story">
-            <strong>{p.you ? `你（${p.role.name}）` : p.role.name}</strong>：{describe(p.role.id, p.stats)}
-          </p>
+          <div key={p.role.id}>
+            <p className="ending-story">
+              <strong>{p.you ? `你（${p.role.name}）` : p.role.name}</strong>：{describe(p.role.id, p.stats)}
+            </p>
+            <Meters stats={p.stats} />
+          </div>
         ))}
         <p className="note">{group}</p>
       </div>
