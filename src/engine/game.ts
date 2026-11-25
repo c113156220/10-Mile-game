@@ -118,6 +118,8 @@ export interface StoryState {
   pairs: PairDialogue[]
   dayIndex: number
   stats: Stats
+  /** 玩家聊過的其他角色，這一週累積的數值（只用來顯示，不影響結局） */
+  others: Record<string, Stats>
 }
 
 /** 開局：每天從「玩家角色參與的對話」中隨機抽一組。rand 可注入，方便測試。 */
@@ -132,13 +134,21 @@ export function newStoryGame(
     const pool = all.filter((p) => p.day === d && (p.asker === roleId || p.replier === roleId))
     pairs.push(pool[Math.floor(rand() * pool.length)])
   }
-  return { roleId, pairs, dayIndex: 0, stats: { ...START_STATS } }
+  return { roleId, pairs, dayIndex: 0, stats: { ...START_STATS }, others: {} }
 }
 
-export function applyStoryEffect(state: StoryState, effect: Stats): StoryState {
+/** 套用玩家這次對話的結果；npcId／npcEffect 是對方的角色與數值變化。 */
+export function applyStoryEffect(state: StoryState, effect: Stats, npcId?: string, npcEffect?: Stats): StoryState {
   const stats = { ...state.stats }
   for (const k of STAT_KEYS) stats[k] = clamp(stats[k] + effect[k])
-  return { ...state, stats }
+  const others = { ...state.others }
+  if (npcId && npcEffect) {
+    const prev = others[npcId] ?? { ...START_STATS }
+    const next = { ...prev }
+    for (const k of STAT_KEYS) next[k] = clamp(prev[k] + npcEffect[k])
+    others[npcId] = next
+  }
+  return { ...state, stats, others }
 }
 
 export function nextStoryDay(state: StoryState): StoryState {

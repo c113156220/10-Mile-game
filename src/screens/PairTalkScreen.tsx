@@ -13,7 +13,7 @@ interface Props {
   story: DayStory
   stats: Stats
   /** 玩家這次對話造成的數值變化（只在玩家做出選擇時呼叫一次） */
-  onEffect: (effect: Stats) => void
+  onEffect: (effect: Stats, npcEffect: Stats) => void
   onFinish: () => void
   isLast: boolean
 }
@@ -38,13 +38,13 @@ export default function PairTalkScreen({ player, npc, pair, playerIsAsker, story
     const reply: PairReply = pickRandom(q.replies)
     setResult({ youSaid: q.text, theySaid: reply.text, deltas: reply.askerEffect })
     setDone(false)
-    onEffect(reply.askerEffect)
+    onEffect(reply.askerEffect, reply.replierEffect)
   }
 
   const chooseReply = (reply: PairReply) => {
     setResult({ youSaid: reply.text, theySaid: '', deltas: reply.replierEffect })
     setDone(true)
-    onEffect(reply.replierEffect)
+    onEffect(reply.replierEffect, reply.askerEffect)
   }
 
   return (

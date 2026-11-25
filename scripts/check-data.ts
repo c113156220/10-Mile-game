@@ -5,6 +5,7 @@
  * 3. 窮舉每個角色所有可能的路徑，確認 7 種結局都能到達
  */
 import { dayStories, pairDialogues } from '../src/data/pairs'
+import { groupTexts, peopleTexts } from '../src/data/peopleTexts'
 import { roles } from '../src/data/roles'
 import { decideEnding, START_STATS } from '../src/engine/game'
 import type { Stats } from '../src/types'
@@ -34,6 +35,20 @@ for (const p of pairDialogues) {
     }
   }
 }
+
+for (const role of roles.filter((r) => r.playable)) {
+  const t = peopleTexts[role.id]
+  if (!t) {
+    fail(`${role.name} 缺少「大家過得怎麼樣」文字`)
+    continue
+  }
+  for (const k of STAT_KEYS) {
+    noDigit(t[k].high, `${role.name} ${k} 高`)
+    noDigit(t[k].low, `${role.name} ${k} 低`)
+    if (!t[k].high || !t[k].low) fail(`${role.name} ${k} 文字缺漏`)
+  }
+}
+Object.values(groupTexts).forEach((g) => noDigit(g, '整體評語'))
 
 const clamp = (n: number) => Math.max(0, Math.min(10, n))
 for (const role of roles.filter((r) => r.playable)) {

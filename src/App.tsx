@@ -69,12 +69,12 @@ export default function App() {
           story={story}
           stats={state.stats}
           isLast={isLast}
-          onEffect={(eff) => setState((s) => (s ? applyStoryEffect(s, eff) : s))}
+          onEffect={(eff, npcEff) => setState((s) => (s ? applyStoryEffect(s, eff, npc.id, npcEff) : s))}
           onFinish={finishDay}
         />
       )}
       {screen === 'ending' && state && (
-        <EndingScreen role={role} ending={endingFor(role.id, decideEnding(state.stats))} stats={state.stats} onRestart={restart} />
+        <EndingScreen role={role} ending={endingFor(role.id, decideEnding(state.stats))} stats={state.stats} others={state.others} onRestart={restart} />
       )}
     </main>
   )
