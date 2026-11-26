@@ -55,7 +55,7 @@ export default function RoleDrawScreen({ onStart }: { onStart: (roleId: string) 
         </div>
       ) : (
         <p className="note">
-          {phase === 'drawing' ? '抽取中…' : '按下按鈕，從小農、合作社社員、消費者中隨機抽一個身分。'}
+          {phase === 'drawing' ? '抽取中…' : '按下按鈕，從小農、經營者、消費者、社員中隨機抽一個身分。'}
         </p>
       )}
 

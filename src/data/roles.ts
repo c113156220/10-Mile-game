@@ -35,7 +35,7 @@ export const roles: Role[] = [
     name: '合作社經營者',
     tagline: '人力有限，先做哪件事？',
     background: '合作社的營運夥伴，每件事都重要，人手卻永遠不夠。',
-    playable: false,
+    playable: true,
     look: { shirt: '#6A93B3', pants: '#3E2D28', accessory: 'tie' },
   },
   {

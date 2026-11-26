@@ -1,80 +1,76 @@
 import { useState } from 'react'
-import { dayStories, pairDialogues } from './data/pairs'
+import { roleIntros, rounds } from './data/shared'
 import { roles } from './data/roles'
-import { endingFor } from './data/roleTexts'
-import { scripts } from './data/scripts'
-import { applyStoryEffect, decideEnding, newStoryGame, nextStoryDay } from './engine/game'
-import type { StoryState } from './engine/game'
-import EndingScreen from './screens/EndingScreen'
-import EventScreen from './screens/EventScreen'
-import PairTalkScreen from './screens/PairTalkScreen'
+import { recordPlay } from './engine/collection'
+import { decideOutcome, newSharedGame, resolveRound } from './engine/shared'
+import type { SharedGame } from './engine/shared'
+import ReportScreen from './screens/ReportScreen'
 import RoleDrawScreen from './screens/RoleDrawScreen'
+import RoundScreen from './screens/RoundScreen'
+import SharedEventScreen from './screens/SharedEventScreen'
 import StartScreen from './screens/StartScreen'
 import StoryScreen from './screens/StoryScreen'
 
-type Screen = 'start' | 'draw' | 'story' | 'event' | 'talk' | 'ending'
+type Screen = 'start' | 'draw' | 'story' | 'event' | 'round' | 'report'
 
 /**
- * 共同故事模式：每天一件全員都會遇到的事 + 與另一個角色的對話。
- * 原本的單人事件資料（data/farmer.ts、member.ts、consumer.ts、dialogues.ts）保留在專案中，目前不使用。
+ * 期末版：一件共同事件 × 四位角色 × 四輪決策 × 影響報告（簡報第 8～10、20 頁）。
+ * 玩家抽到其中一個角色，其他三位由規則回應。
+ * 較早的單人事件版與兩兩對話版（data/ 與 screens/ 內的其他檔案）仍保留在專案中，目前不使用。
  */
 export default function App() {
   const [screen, setScreen] = useState<Screen>('start')
-  const [state, setState] = useState<StoryState | null>(null)
+  const [game, setGame] = useState<SharedGame | null>(null)
+  const [round, setRound] = useState(0)
+  const [progress, setProgress] = useState<{ roles: string[]; outcomes: string[] }>({ roles: [], outcomes: [] })
 
-  const role = roles.find((r) => r.id === state?.roleId) ?? roles[0]
-  const pair = state ? state.pairs[state.dayIndex] : null
-  const playerIsAsker = !!pair && pair.asker === role.id
-  const npc = pair ? (roles.find((r) => r.id === (playerIsAsker ? pair.replier : pair.asker)) ?? roles[1]) : roles[1]
-  const story = state ? dayStories[state.dayIndex] : dayStories[0]
-  const total = dayStories.length
-  const isLast = !!state && state.dayIndex >= total - 1
+  const role = roles.find((r) => r.id === game?.roleId) ?? roles[0]
+  const actor = roles.find((r) => r.id === rounds[round].roleId) ?? roles[0]
+  const entry = game?.history.find((h) => h.roundIndex === round)
+
+  /** 進入某一輪：輪到電腦角色時，由規則立刻決定。 */
+  const enter = (g: SharedGame, i: number) => {
+    const next = rounds[i].roleId === g.roleId ? g : resolveRound(g, i)
+    setGame(next)
+    setRound(i)
+    setScreen('round')
+  }
 
   const begin = (roleId: string) => {
-    setState(newStoryGame(roleId, pairDialogues, total))
+    setGame(newSharedGame(roleId))
+    setRound(0)
     setScreen('story')
   }
 
-  const finishDay = () => {
-    if (!state) return
-    if (isLast) setScreen('ending')
-    else {
-      setState(nextStoryDay(state))
-      setScreen('event')
-    }
-  }
+  const pick = (i: 0 | 1 | 2) => game && setGame(resolveRound(game, round, i))
 
-  const restart = () => {
-    setState(null)
-    setScreen('draw')
+  const next = () => {
+    if (!game) return
+    if (round >= rounds.length - 1) {
+      setProgress(recordPlay(game.roleId, decideOutcome(game.state).id))
+      setScreen('report')
+    } else enter(game, round + 1)
   }
 
   return (
     <main className="app">
       {screen === 'start' && <StartScreen onStart={() => setScreen('draw')} />}
       {screen === 'draw' && <RoleDrawScreen onStart={begin} />}
-      {screen === 'story' && state && (
-        <StoryScreen role={role} intro={scripts[role.id].intro} onContinue={() => setScreen('event')} />
+      {screen === 'story' && game && <StoryScreen role={role} intro={roleIntros[role.id]} onContinue={() => setScreen('event')} />}
+      {screen === 'event' && game && <SharedEventScreen state={game.state} onContinue={() => enter(game, 0)} />}
+      {screen === 'round' && game && (
+        <RoundScreen key={`${round}-${entry ? 1 : 0}`} roundIndex={round} player={role} actor={actor} state={game.state} entry={entry} onPick={pick} onNext={next} />
       )}
-      {screen === 'event' && state && pair && (
-        <EventScreen player={role} npc={npc} story={story} total={total} stats={state.stats} onContinue={() => setScreen('talk')} />
-      )}
-      {screen === 'talk' && state && pair && (
-        <PairTalkScreen
-          key={`${state.dayIndex}`}
-          player={role}
-          npc={npc}
-          pair={pair}
-          playerIsAsker={playerIsAsker}
-          story={story}
-          stats={state.stats}
-          isLast={isLast}
-          onEffect={(eff, npcEff) => setState((s) => (s ? applyStoryEffect(s, eff, npc.id, npcEff) : s))}
-          onFinish={finishDay}
+      {screen === 'report' && game && (
+        <ReportScreen
+          role={role}
+          game={game}
+          progress={progress}
+          onRestart={() => {
+            setGame(null)
+            setScreen('draw')
+          }}
         />
-      )}
-      {screen === 'ending' && state && (
-        <EndingScreen role={role} ending={endingFor(role.id, decideEnding(state.stats))} stats={state.stats} others={state.others} onRestart={restart} />
       )}
     </main>
   )

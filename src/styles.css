@@ -151,3 +151,11 @@ body {
 }
 
 .duo { display: flex; align-items: flex-end; gap: 56px; }
+
+/* ---- 期末版：共同狀態與影響報告 ---- */
+.meter-hint { display: block; font-size: 11px; font-weight: 400; color: var(--muted, #6b6b5e); }
+.timeline { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.timeline li { font-size: 14px; line-height: 1.5; }
+.timeline .who { font-weight: 700; }
+.timeline .fx { color: #6b6b5e; font-size: 13px; }
+.service-list { margin: 0; padding-left: 18px; font-size: 14px; line-height: 1.7; }
